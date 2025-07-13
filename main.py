@@ -6,19 +6,6 @@ from nltk.stem import WordNetLemmatizer as wnl
 from nltk.corpus import wordnet
 from deep_translator import GoogleTranslator
 
-"""
-# prompt= str(input("Enter a prompt: "))
-
-language = detect(prompt)
-
-tokens = nltk.word_tokenize(prompt)
-# print("Tokens:", tokens)
-
-tagged = nltk.pos_tag(tokens)
-# print("POS Tags:", tagged)
-
-tree = nltk.ne_chunk(tagged)
-# print("Named Entities:", tree)
 
 def get_wordnet_pos(treebank_tag):
     if treebank_tag.startswith('J'):
@@ -32,14 +19,6 @@ def get_wordnet_pos(treebank_tag):
     else:
         return wordnet.NOUN
 
-lemmatizer = wnl()
-lemmatized = [lemmatizer.lemmatize(token, pos=get_wordnet_pos(pos)) for token, pos in tagged]
-# print("Lemmatized Tokens:", lemmatized)
-
-translated = GoogleTranslator(source=language, target='fr').translate(prompt)
-# print("Translated Text:", translated)
-"""
-
 def translate_text():
     input_text = input_box.get("1.0", tk.END).strip()
     if not input_text:
@@ -52,8 +31,18 @@ def translate_text():
     detected_language = detect(input_text)
     target_language = target_language_var.get()
 
+    tokens = nltk.word_tokenize(input_text)
+    tagged = nltk.pos_tag(tokens)
+
+    if lemmatization_flag.get():
+        lemmatizer = wnl()
+        lemmatized = [lemmatizer.lemmatize(token, pos=get_wordnet_pos(pos)) for token, pos in tagged]
+        cleaned_text = ' '.join(lemmatized)
+    else:
+        cleaned_text = input_text
+
     try:
-        translated_text = GoogleTranslator(source=detected_language, target=target_language).translate(input_text)
+        translated_text = GoogleTranslator(source=detected_language, target=target_language).translate(cleaned_text)
     except Exception as e:
         translated_text = f"Error during translation: {str(e)}"
     
@@ -93,4 +82,13 @@ output_label = tk.Label(root, text="Translated text:").pack(pady=5)
 output_box = tk.Text(root, height=10, width=50, state=tk.DISABLED)
 output_box.pack()
 
+# lemmatization flag
+lemmatization_flag = tk.BooleanVar(value=False)
+lemmatization_checkbox = tk.Checkbutton(root, 
+                                        text="Enable Lemmatization", 
+                                        variable=lemmatization_flag
+                                        )
+lemmatization_checkbox.pack(pady=5)
+
 root.mainloop()
+
